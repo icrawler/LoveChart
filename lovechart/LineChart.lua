@@ -1,14 +1,17 @@
 local Dataset = require(lovechart_dir .. "Dataset")
-local Utils = require(lovechart_dir .. "utils")
+local u = require(lovechart_dir .. "utils")
+local lg = love.graphics
 
 local LineChart = class:new()
 
-	function LineChart:init(dataset, width, height, style)
+	function LineChart:init(dataset, x, y, width, height, style)
 		self.dataset = dataset or Dataset:new()
 		self.points = {}
 		self.width = width
 		self.height = height
-		self.style = Utils.getDefValue(style, Utils.createStyle())
+		self.style = u.getDefValue(style, u.createStyle())
+		self.x = x
+		self.y = y
 	end
 
 	function LineChart:update()
@@ -23,18 +26,21 @@ local LineChart = class:new()
 	end
 
 	function LineChart:draw()
-		love.graphics.setColor(self.style.strokeColor)
-		love.graphics.setLine(self.style.strokeWidth)
-		
-		for i=1, self.dataset:getLength() do
-			love.graphics.circle("fill", self.points[i][1], self.points[i][2], self.style.strokeWidth/2)
-			if i > 1 then
-				love.graphics.line(self.points[i-1][1], self.points[i-1][2], self.points[i][1], self.points[i][2])
-			end
+		local style = self.style
+		lg.setColor(style.backgroundColor or {0, 0, 0, 255})
+
+		lg.rectangle("fill", self.x, self.y, self.width, self.height)
+
+		lg.setColor(style.strokeColor or {255, 255, 255, 255})
+		lg.setLineWidth(style.strokeWidth or 1)
+
+		for i=2, self.dataset:getLength() do
+			lg.line(self.points[i-1][1]+self.x, self.points[i-1][2]+self.y,
+					self.points[i][1]  +self.x, self.points[i][2]  +self.y)
 		end
 
-		love.graphics.setColor(255, 255, 255, 255)
-		love.graphics.setLine(1)
+		lg.setColor(255, 255, 255, 255)
+		lg.setLineWidth(1)
 	end
 
 return LineChart
